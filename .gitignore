@@ -14,4 +14,3 @@ env/
 *.log
 # Secrets / local environment
 .env
-
