@@ -1,24 +1,25 @@
 from fastapi import FastAPI, Header, HTTPException
-from git_day_practice.settings import get_settings
-settings = get_settings()
 
-app = FastAPI(title=settings.app_name)
+from git_day_practice.settings import settings
+
+app = FastAPI(title=settings.APP_NAME)
+
+
+# Health check endpoint
+@app.get("/health")
+def health():
+    return {"status": "OK"}
+
+
+# Config endpoint
 @app.get("/config")
-async def show_config():
-    s = get_settings()
-    return {
-        "app_name": s.app_name,
-        "environment": s.environment,
-        "debug": s.debug,
-        "host": s.host,
-        "port": s.port,
-        "allowed_origins": s.allowed_origins,
-    }
+def get_config():
+    return {"app_name": settings.APP_NAME, "api_key": settings.API_KEY}
+
+
+# Secure data endpoint with API key check
 @app.get("/secure-data")
-async def secure_data(x_api_key: str | None = Header(default=None)):
-    s = get_settings()
-
-    if x_api_key != s.api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-
-    return {"secret_data": "approved"}
+def secure_data(x_api_key: str | None = Header(default=None)):
+    if x_api_key != settings.API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {"data": "This is secure data!"}
